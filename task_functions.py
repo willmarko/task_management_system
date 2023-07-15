@@ -1,5 +1,12 @@
+import csv
+import os
+
+# Function to clear the console screen
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 def print_main_menu(menu):
-      """
+    """
     Given a dictionary with the menu,
     prints the keys and values as the
     formatted options.
@@ -7,10 +14,10 @@ def print_main_menu(menu):
     and outputs a question
     "What would you like to do?"
     """
-      print(f"==========================\nWhat would you like to do?")
-      for key in menu:
-          print(f"{key} - {menu[key]}")
-      print("==========================")
+    print(f"==========================\nWhat would you like to do?")
+    for key in menu:
+        print(f"{key} - {menu[key]}")
+    print("==========================")
 
 def get_written_date(date_list):
     """
@@ -37,7 +44,7 @@ def get_written_date(date_list):
 
 ######## LIST OPTION ########
 
-def get_selection(action, suboptions, to_upper = True, go_back = False):
+def get_selection(action, suboptions, to_upper=True, go_back=False):
     """
     param: action (string) - the action that the user
             would like to perform; printed as part of
@@ -52,8 +59,8 @@ def get_selection(action, suboptions, to_upper = True, go_back = False):
             If set to True, then allows the user to select the
             option M to return back to the main menu
 
-    The function displays a submenu for the user to choose from. 
-    Asks the user to select an option using the input() function. 
+    The function displays a submenu for the user to choose from.
+    Asks the user to select an option using the input() function.
     Re-prints the submenu if an invalid option is given.
     Prints the confirmation of the selection by retrieving the
     description of the option from the suboptions dictionary.
@@ -77,7 +84,7 @@ def get_selection(action, suboptions, to_upper = True, go_back = False):
         else:
             selection = input("::: Enter your selection\n> ")
         if to_upper:
-            selection = selection.upper() # to allow us to input lower- or upper-case letters
+            selection = selection.upper()  # to allow us to input lower- or upper-case letters
         if go_back and selection.upper() == 'M':
             return 'M'
 
@@ -85,85 +92,47 @@ def get_selection(action, suboptions, to_upper = True, go_back = False):
           f"{action.lower()} |{suboptions[selection].lower()}|.")
     return selection
 
-def print_task(task, priority_map, name_only = False):
-    """
-    param: task (dict) - a dictionary object that is expected
-            to have the following string keys:
-    - "name": a string with the task's name
-    - "info": a string with the task's details/description
-            (the field is not displayed if the value is empty)
-    - "priority": an integer, representing the task's priority
-        (defined by a dictionary priority_map)
-    - "duedate": a valid date-string in the US date format: <MM>/<DD>/<YEAR>
-            (displayed as a written-out date)
-    - "done": a string representing whether a task is completed or not
-
-    param: priority_map (dict) - a dictionary object that is expected
-            to have the integer keys that correspond to the "priority"
-            values stored in the task; the stored value is displayed for the
-            priority field, instead of the numeric value.
-    param: name_only (Boolean) - by default, set to False.
-            If True, then only the name of the task is printed.
-            Otherwise, displays the formatted task fields.
-
-    returns: None; only prints the task values
-
-    Helper functions:
-    - get_written_date() to display the 'duedate' field
-    """
-    if name_only == True:
-        print(task["name"])
-    else:
-        print(task["name"])
-        if task["info"].strip() == "":
-            print("  * Due: " + get_written_date(task["duedate"].split("/")) + "  (Priority: " + priority_map[int((task["priority"]))] + ")")
-            print("  * Completed? " + task["done"])
+def print_task(task, priority_map):
+    for key, value in task.items():
+        if key == 'priority':
+            priority = priority_map.get(value, 'Unknown')  # Use 'Unknown' if priority value is not found in the map
+            print(f"{key}: {priority}")
         else:
-            print("  * " + task["info"])
-            print("  * Due: " + get_written_date(task["duedate"].split("/")) + "  (Priority: " + priority_map[int((task["priority"]))] + ")")
-            print("  * Completed? " + task["done"])
+            print(f"{key}: {value}")
 
-def print_tasks(task_list, priority_map, name_only = False, show_idx = False, start_idx = 0, completed = "all"):
+def print_tasks(tasks, priority_map, filter_option=None, show_idx=False, start_idx=1):
     """
-    param: task_list (list) - a list containing dictionaries with
-            the task data
-    param: priority_map (dict) - a dictionary object that is expected
-            to have the integer keys that correspond to the "priority"
-            values stored in the task; the stored value is displayed 
-            for the priority field, instead of the numeric value.
-    param: name_only (Boolean) - by default, set to False.
-            If True, then only the name of the task is printed.
-            Otherwise, displays the formatted task fields.
-            Passed as an argument into the helper function.
-    param: show_idx (Boolean) - by default, set to False.
-            If False, then the index of the task is not displayed.
-            Otherwise, displays the "{idx + start_idx}." before the
-            task name.
-    param: start_idx (int) - by default, set to 0;
-            an expected starting value for idx that
-            gets displayed for the first task, if show_idx is True.
-    param: completed (str) - by default, set to "all".
-            By default, prints all tasks, regardless of their
-            completion status ("done" field status).
-            Otherwise, it is set to one of the possible task's "done"
-            field's values in order to display only the tasks with
-            that completion status.
+    param: tasks (list) - a list of tasks to print
+    param: priority_map (dict) - a dictionary mapping priority values
+            to their representations
+    param: filter_option (string) - an optional filter option to display
+            only completed or incomplete tasks
+    param: show_idx (bool) - a flag indicating whether to show task indices
+    param: start_idx (int) - the starting index for task enumeration
 
-    returns: None; only prints the task values from the task_list
-
-    Helper functions:
-    - print_task() to print individual tasks
+    The function prints the tasks based on the given parameters.
+    If a filter_option is provided, it displays only completed or
+    incomplete tasks. If show_idx is True, it shows the task indices.
+    The start_idx parameter sets the initial index for task enumeration.
     """
-    print("-"*42)
-    for task in task_list: # go through all tasks in the list
-        if show_idx == True: # if the index of the task needs to be displayed
-            print(f"{task_list.index(task) + start_idx}.", end=" ")
-        if completed == "all":
-            print_task(task, priority_map, name_only)
-        elif task["done"] == completed:
-            print_task(task, priority_map, name_only)
+    filtered_tasks = []
+    if filter_option == 'C':
+        filtered_tasks = [task for task in tasks if task.get('done', '') == 'yes']
+    elif filter_option == 'I':
+        filtered_tasks = [task for task in tasks if task.get('done', '') == 'no']
+    else:
+        filtered_tasks = tasks
 
-def is_valid_index(idx, in_list, start_idx = 0):
+    if not filtered_tasks:
+        print("No tasks to display.")
+        return
+
+    for idx, task in enumerate(filtered_tasks, start=start_idx):
+        if show_idx:
+            print(f"{idx}: ", end='')
+        print_task(task, priority_map)
+
+def is_valid_index(idx, in_list, start_idx=1, return_task=True):
     """
     param: idx (str) - a string that is expected to
             contain an integer index to validate
@@ -194,7 +163,7 @@ def is_valid_index(idx, in_list, start_idx = 0):
     else:
         return False
 
-def delete_item(info_list, idx, start_idx = 0):
+def delete_item(info_list, idx, start_idx=0):
     """
     param: info_list - a list from which to remove
             an item
@@ -221,15 +190,11 @@ def delete_item(info_list, idx, start_idx = 0):
     Helper functions:
     - is_valid_index()
     """
-    if type(info_list) == list and type(idx) == str and type(start_idx) == int:
-        if info_list == []:
-            return 0
-        if is_valid_index(idx, info_list, start_idx) == False:
-            return -1
-        if is_valid_index(idx, info_list, start_idx) == True:
-            deleted_num = info_list[int(idx)-start_idx]
-            info_list.pop(int(idx)-start_idx)
-            return deleted_num
+    if info_list == []:
+        return None
+    if is_valid_index(idx, info_list, start_idx):
+        return info_list.pop(int(idx) - start_idx)
+    return None
 
 def is_valid_name(name_str):
     """
@@ -300,7 +265,7 @@ def is_valid_month(date_list):
             return False
     else:
         return False
-    
+
 def is_valid_day(date_list):
     """
     param: date_list - a list containing 3 elements
@@ -364,7 +329,7 @@ def is_valid_date(date_str):
     returns:
     True if all validations are passed
     Otherwise, return False
-    
+
     helper functions:
     is_valid_month
     is_valid_day
@@ -400,9 +365,9 @@ def is_valid_completion(complete_str):
     else:
         return False
 
-def get_new_task(lyst, dictionary):
+def get_new_task(task_data, priority_map):
     """
-    param: list - a list containing 
+    param: list - a list containing
 
     param: dictionary - a dictionary with priority scale for our is_valid_priority function
 
@@ -411,7 +376,7 @@ def get_new_task(lyst, dictionary):
     the function confirms that each element within our list is of type str. If not, our function
     will stop and return ("type", and the list element that did not pass the str validation).
     Otherwise, we move on and check that each element of our list is a valid input using each
-    helper function for the associated element, if any fail our function will return 
+    helper function for the associated element, if any fail our function will return
     ("which element type failed", and the input it had). Otherwise if all validations were True
     and passed, get_new_task will return a dictionary with each of the listed elements inside
     and linked with their associated key value.
@@ -422,83 +387,40 @@ def get_new_task(lyst, dictionary):
     is_valid_date
     is_valid_completion
     """
-    if type(lyst) == list and type(dictionary) == dict:
-        if len(lyst) != 5:
-            return len(lyst)
-        for element in lyst:
-            if type(element) != str:
-                return ("type", lyst[lyst.index(element)])
-        if (is_valid_name(lyst[0]) == True) and (is_valid_priority(lyst[2], dictionary) == True) and (is_valid_date(lyst[3].strip()) == True) and (is_valid_completion(lyst[4].strip()) == True):
-            dict2 = {"name": lyst[0], "info": lyst[1], "priority": int(lyst[2]), "duedate": lyst[3].strip(), "done": lyst[4].strip()}
-            return dict2
-        else:
-            if is_valid_name(lyst[0]) == False:
-                return ("name", lyst[0])
-            if is_valid_priority(lyst[2], dictionary) == False:
-                return ("priority", lyst[2])
-            if is_valid_date(lyst[3].strip()) == False:
-                return ("duedate", lyst[3].strip())
-            if is_valid_completion(lyst[4].strip()) == False:
-                return ("done", lyst[4].strip())
-
-def load_tasks_from_csv(filename, in_list, priority_map):
-    """
-    param: filename (str) - A string variable which represents the
-            name of the file from which to read the contents.
-    param: in_list (list) - A list of task dictionary objects to which
-            the tasks read from the provided filename are appended.
-            If in_list is not empty, the existing tasks are not dropped.
-    param: priority_map (dict) - a dictionary that contains the mapping
-            between the integer priority value (key) to its representation
-            (e.g., key 1 might map to the priority value "Highest" or "Low")
-            Needed by the helper function.
-
-    The function ensures that the last 4 characters of the filename are '.csv'.
-    The function requires the `import csv` and `import os`.
-
-    If the file exists, the function will use the `with` statement to open the
-    `filename` in read mode. For each row in the csv file, the function will
-    proceed to create a new task using the `get_new_task()` function.
-    - If the function `get_new_task()` returns a valid task object,
-    it gets appended to the end of the `in_list`.
-    - If the `get_new_task()` function returns an error, the 1-based
-    row index gets recorded and added to the NEW list that is returned.
-    E.g., if the file has a single row, and that row has invalid task data,
-    the function would return [1] to indicate that the first row caused an
-    error; in this case, the `in_list` would not be modified.
-    If there is more than one invalid row, they get excluded from the
-    in_list and their indices will be appended to the new list that's
-    returned.
-
-    returns:
-    * -1, if the last 4 characters in `filename` are not '.csv'
-    * None, if `filename` does not exist.
-    * A new empty list, if the entire file is successfully read from `in_list`.
-    * A list that records the 1-based index of invalid rows detected when
-      calling get_new_task().
-
-    Helper functions:
-    - get_new_task()
-    """
-    import csv
-    import os
-    new_list = []
-    if filename[-4:] != ".csv":
-        return -1
+    if len(task_data) != 5:
+        return len(task_data)
+    name, info, priority, due_date, done = task_data
+    if is_valid_name(name) and is_valid_priority(priority, priority_map) and \
+        is_valid_date(due_date) and is_valid_completion(done):
+        task = {
+            'name': name,
+            'info': info,
+            'priority': int(priority),
+            'duedate': due_date.strip(),
+            'done': done.strip()
+        }
+        return task
     else:
-        if os.path.isfile(filename) == True:
-            with open(filename, 'r') as csvfile:
-                csv_reader = csv.reader(csvfile, delimiter=',')
-                row_count = 0
-                for row in csv_reader:
-                    row_count+= 1
-                    if type(get_new_task(row, priority_map)) == dict:
-                        in_list.append(get_new_task(row, priority_map))
-                    else:
-                        new_list.append(row_count)
-                return new_list
-        else:
-            return None
+        return None
+
+def load_tasks_from_csv(filename, all_tasks, priority_scale):
+    try:
+        with open(filename, 'r', newline='') as file:
+            reader = csv.DictReader(file)
+            all_tasks.clear()  # Clear existing tasks before loading from CSV
+            for row in reader:
+                task = {
+                    'name': row.get('name', ''),
+                    'info': row.get('info', ''),
+                    'priority': int(row.get('priority', 0)),
+                    'duedate': row.get('duedate', ''),
+                    'done': row.get('done', '')
+                }
+                all_tasks.append(task)
+
+        return []
+    except FileNotFoundError:
+        return None
 
 def save_tasks_to_csv(tasks_list, filename):
     """
@@ -535,12 +457,8 @@ def save_tasks_to_csv(tasks_list, filename):
         with open(filename, 'w', newline='') as csvfile:
             csv_writer = csv.writer(csvfile)
             for task in tasks_list:
-                newlist = []
-                newlist.append(list(task.values()))
-                for task in newlist:
-                    csv_writer.writerow(task)
-            # for task in tasks_list:
-            #     csv_writer.writerow(task["name"].split(","))
+                csv_writer.writerow(list(task.values()))
+        return None
 
 def update_task(info_list, idx, priority_map, field_key, field_info, start_idx = 0):
     """
@@ -555,7 +473,7 @@ def update_task(info_list, idx, priority_map, field_key, field_info, start_idx =
             (e.g., key 1 might map to the priority value "Highest" or "Low")
             Needed if "field_key" is "priority" to validate its value.
     param: field_key (string) - a text expected to contain the name
-            of a key in the info_list[idx] dictionary whose value needs to 
+            of a key in the info_list[idx] dictionary whose value needs to
             be updated with the value from field_info
     param: field_info (string) - a text expected to contain the value
             to validate and with which to update the dictionary field
@@ -610,3 +528,171 @@ def update_task(info_list, idx, priority_map, field_key, field_info, start_idx =
             return field_key
     else:
         return field_key
+
+def save_tasks_to_csv(tasks, filename):
+    try:
+        with open(filename, 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["name", "info", "priority", "duedate", "done"])
+            for task in tasks:
+                writer.writerow([task.get('name', ''),
+                                 task.get('info', ''),
+                                 task.get('priority', ''),
+                                 task.get('duedate', ''),
+                                 task.get('done', '')])
+        return None
+    except Exception as e:
+        return str(e)
+
+def restore_tasks_from_file(filename):
+    try:
+        with open(filename, 'r', newline='') as file:
+            reader = csv.reader(file)
+            tasks = []
+            header = next(reader)  # Skip the header row
+            for row in reader:
+                task = {
+                    'name': row[0],
+                    'info': row[1],
+                    'priority': int(row[2]),
+                    'duedate': row[3],
+                    'done': row[4]
+                }
+                tasks.append(task)
+        return tasks
+    except FileNotFoundError:
+        return None
+
+def main_menu_actions(option, all_tasks, priority_map):
+    """
+    param: option (string) - a letter that the user selected from the menu
+    param: all_tasks (list) - a list that contains dictionaries with tasks
+    param: priority_map (dict) - a dictionary that contains the mapping
+            between the integer priority value (key) to its representation
+            (e.g., key 1 might map to the priority value "Highest" or "Low")
+
+    The function performs the requested action based on the user's input.
+    For each possible value of the option, the function either displays
+    the tasks, prompts the user to add a new task, deletes a task,
+    changes the status of a task, updates other fields of a task,
+    or saves and loads tasks to/from a CSV file.
+
+    returns: None
+    """
+    if option == 'V':
+        # Display tasks
+        clear_screen()
+        view_options = {
+            'A': 'All tasks',
+            'C': 'Completed tasks',
+            'I': 'Incomplete tasks'
+        }
+        view_option = get_selection("view", view_options)
+        clear_screen()
+        print(f"::: {view_options[view_option]}:")
+        print_tasks(all_tasks, priority_map, filter_option=view_option, show_idx=True, start_idx=1)
+    elif option == 'A':
+        # Add a new task
+        clear_screen()
+        print("::: Add a new task (info can be left blank):")
+        task_data = []
+        field_names = ['name', 'info', 'priority', 'duedate', 'completion status (yes or no)']
+        for field in field_names:
+            field_value = input(f"Enter the {field}: ")
+            task_data.append(field_value)
+        new_task = get_new_task(task_data, priority_map)
+        if new_task is not None:
+            all_tasks.append(new_task)
+            print("New task added successfully!")
+        else:
+            print("Invalid task data. Task not added.")
+    elif option == 'D':
+        # Delete a task
+        clear_screen()
+        print("::: Delete a task:")
+        idx = input("Enter the index of the task you want to delete: ")
+        if is_valid_index(idx, all_tasks, start_idx=1):
+            deleted_task = delete_item(all_tasks, idx, start_idx=1)
+            if deleted_task is not None:
+                print("Task deleted successfully:")
+                print_task(deleted_task, priority_map)
+            else:
+                print("Invalid index. Task not deleted.")
+        else:
+            print("Invalid index. Task not deleted.")
+    elif option == 'C':
+        # Change task status
+        clear_screen()
+        print("::: Change task status:")
+        idx = input("Enter the index of the task you want to change status for: ")
+        if is_valid_index(idx, all_tasks, start_idx=1):
+            task = all_tasks[int(idx) - 1]
+            print("Current task status:")
+            print_task(task, priority_map)
+            new_status = input("Enter the new status (yes or no): ")
+            if is_valid_completion(new_status):
+                task['done'] = new_status
+                print("Task status updated successfully!")
+            else:
+                print("Invalid status. Task status not updated.")
+        else:
+            print("Invalid index. Task status not updated.")
+    elif option == 'U':
+        # Update task fields
+        clear_screen()
+        print("::: Update task fields:")
+        idx = input("Enter the index of the task you want to update: ")
+        if is_valid_index(idx, all_tasks, start_idx=1):
+            task = all_tasks[int(idx) - 1]
+            print("Current task:")
+            print_task(task, priority_map)
+            field = input("Enter the field you want to update (name, info, priority, duedate, done): ")
+            if field == 'name':
+                new_value = input("Enter the new name: ")
+                task['name'] = new_value
+            elif field == 'info':
+                new_value = input("Enter the new info: ")
+                task['info'] = new_value
+            elif field == 'priority':
+                new_value = input("Enter the new priority: ")
+                if is_valid_priority(new_value, priority_map):
+                    task['priority'] = int(new_value)
+                else:
+                    print("Invalid priority value. Task not updated.")
+            elif field == 'duedate':
+                new_value = input("Enter the new due date: ")
+                if is_valid_date(new_value):
+                    task['duedate'] = new_value
+                else:
+                    print("Invalid due date format. Task not updated.")
+            elif field == 'done':
+                new_value = input("Enter the new completion status (yes or no): ")
+                if is_valid_completion(new_value):
+                    task['done'] = new_value
+                else:
+                    print("Invalid completion status. Task not updated.")
+            else:
+                print("Invalid field. Task not updated.")
+        else:
+            print("Invalid index. Task not updated.")
+    elif option == 'S':
+        # Save tasks to a CSV file
+        clear_screen()
+        filename = input("Enter the filename to save tasks to (must end in .csv): ")
+        save_result = save_tasks_to_csv(all_tasks, filename)
+        if save_result is None:
+            print("Tasks saved successfully!")
+        else:
+            print(f"Error saving tasks: {save_result}")
+    elif option == 'L':
+        # Load tasks from a CSV file
+        clear_screen()
+        filename = input("Enter the filename to load tasks from (must end in .csv): ")
+        load_result = load_tasks_from_csv(filename, all_tasks, priority_map)
+        if load_result is None:
+            print(f"Error loading tasks: {load_result}")
+        else:
+            print("Tasks loaded successfully!")
+    else:
+        clear_screen()
+        print("Invalid option. Please select a valid option.")
